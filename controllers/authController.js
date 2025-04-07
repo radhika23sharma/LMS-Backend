@@ -93,6 +93,7 @@ const verifyOTP = async (req, res) => {
 };
 
 // 🔑 Login
+// 🔑 Login
 const login = async (req, res) => {
   try {
     const { emailOrPhone, password } = req.body;
@@ -118,40 +119,7 @@ const login = async (req, res) => {
       return res.status(403).json({ success: false, message: "Please verify your account first." });
     }
 
-    await sendOTP(user);
-
-    res.json({
-      success: true,
-      message: "OTP sent for login verification.",
-    });
-  } catch (error) {
-    console.error("Login OTP Send Error:", error);
-    res.status(500).json({ success: false, message: "Failed to send login OTP." });
-  }
-};
-
-// ✅ Verify Login OTP
-const verifyLoginOTP = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({ success: false, message: "Email and OTP are required." });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found." });
-    }
-
-    if (user.otp !== otp || user.otpExpiresAt < Date.now()) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
-    }
-
-    user.otp = undefined;
-    user.otpExpiresAt = undefined;
-    await user.save();
-
+    // 🟢 Directly generate token here
     const token = generateToken(user);
 
     res.json({
@@ -167,10 +135,13 @@ const verifyLoginOTP = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login OTP Error:", error);
-    res.status(500).json({ success: false, message: "OTP verification failed." });
+    console.error("Login Error:", error);
+    res.status(500).json({ success: false, message: "Login failed." });
   }
 };
+
+
+
 
 // 🔁 Resend OTP for Registration
 const resendRegisterOTP = async (req, res) => {
@@ -203,42 +174,13 @@ const resendRegisterOTP = async (req, res) => {
   }
 };
 
-// 🔁 Resend OTP for Login
-const resendLoginOTP = async (req, res) => {
-  try {
-    const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required." });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found." });
-    }
-
-    if (!user.isVerified) {
-      return res.status(403).json({ success: false, message: "Please verify your account first." });
-    }
-
-    await sendOTP(user);
-
-    res.json({
-      success: true,
-      message: "Login OTP resent successfully.",
-    });
-  } catch (error) {
-    console.error("Resend Login OTP Error:", error);
-    res.status(500).json({ success: false, message: "Failed to resend login OTP." });
-  }
-};
 
 module.exports = {
   register,
   verifyOTP,
   login,
-  verifyLoginOTP,
+  
   resendRegisterOTP,
-  resendLoginOTP,
+  
 };
