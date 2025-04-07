@@ -5,9 +5,8 @@ const {
   register,
   verifyOTP,
   login,
-  verifyLoginOTP,
   resendRegisterOTP,
-  resendLoginOTP
+ 
 } = require("../controllers/authController");
 
 // 📩 User Registration

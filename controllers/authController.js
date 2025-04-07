@@ -93,7 +93,6 @@ const verifyOTP = async (req, res) => {
 };
 
 // 🔑 Login
-// 🔑 Login
 const login = async (req, res) => {
   try {
     const { emailOrPhone, password } = req.body;
@@ -115,11 +114,8 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials." });
     }
 
-    if (!user.isVerified) {
-      return res.status(403).json({ success: false, message: "Please verify your account first." });
-    }
+    // ✅ OTP check removed — login allowed even if not verified
 
-    // 🟢 Directly generate token here
     const token = generateToken(user);
 
     res.json({
@@ -139,8 +135,6 @@ const login = async (req, res) => {
     res.status(500).json({ success: false, message: "Login failed." });
   }
 };
-
-
 
 
 // 🔁 Resend OTP for Registration
