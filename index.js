@@ -31,6 +31,10 @@ app.use("/api/admin", subCategoryRoutes);
 app.use("/api/admin", contentRoutes); 
 
 // Server start
+// ✅ Root route – health check (ye upar hona chahiye)
+app.get("/", (req, res) => res.send("Server is live"));
+
+// ✅ Server start
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
