@@ -10,7 +10,7 @@ const {
 
 const { authMiddleware, adminMiddleware } = require("../../middleware/authMiddleware");
 
-// 👑 Admin Routes
+// Admin Routes
 router.post("/sub-category", authMiddleware, adminMiddleware, addSubCategory);
 router.get("/sub-categories", authMiddleware, adminMiddleware, getAllSubCategories);
 router.get("/sub-category/:slug", authMiddleware, adminMiddleware, getSubCategoryBySlug);
