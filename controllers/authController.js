@@ -136,7 +136,6 @@ const login = async (req, res) => {
   }
 };
 
-
 // 🔁 Resend OTP for Registration
 const resendRegisterOTP = async (req, res) => {
   try {
@@ -174,7 +173,6 @@ module.exports = {
   register,
   verifyOTP,
   login,
-  
   resendRegisterOTP,
   
 };

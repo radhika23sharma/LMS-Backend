@@ -18,8 +18,6 @@ router.post("/verify-register-otp", verifyOTP);
 // 🔐 Login
 router.post("/login", login);
 
-
-
 // Resend
 router.post("/resend-register-otp", resendRegisterOTP);
 
