@@ -2,18 +2,18 @@
   "name": "lms-backend",
   "version": "1.0.0",
   "main": "index.js",
-"scripts": {
-  "start": "node index.js",
-   "dev": "nodemon index.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
-
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -26,6 +26,7 @@
     "nodemailer": "^6.10.0",
     "otp-generator": "^4.0.1",
     "razorpay": "^2.9.6",
+    "react-pageflip": "^2.0.3",
     "slugify": "^1.6.6"
   }
 }
