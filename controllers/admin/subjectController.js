@@ -1,28 +1,42 @@
 const Subject = require("../../models/Subject");
 const slugify = require("slugify");
+const MainCategory = require("../../models/MainCategory"); // Make sure MainCategory is imported
+const Stream = require("../../models/Stream");
 
 // ➕ Add Subject
 exports.addSubject = async (req, res) => {
   try {
-    const { name, mainCategory, coverImage } = req.body;
+    const { name, stream, coverImage } = req.body;
 
-    if (!name || !mainCategory) {
-      return res.status(400).json({ success: false, message: "Name and Main Category are required." });
+    // Fetch Stream to get MainCategory info
+    const streamDoc = await Stream.findById(stream);
+    if (!streamDoc) {
+      return res.status(400).json({ success: false, message: "Invalid Stream." });
     }
 
-    const slug = slugify(name, { lower: true, strict: true });
+    const mainCategory = streamDoc.mainCategory; // Get mainCategory from the stream
 
-    const existing = await Subject.findOne({ slug });
+    // Validate Stream if class is 11th or 12th
+    if ((mainCategory.className === "11th" || mainCategory.className === "12th") && !stream) {
+      return res.status(400).json({ success: false, message: "Stream is required for class 11th and 12th." });
+    }
+
+    // Check if subject with the same slug exists
+    const existing = await Subject.findOne({ slug: slugify(name, { lower: true, strict: true }) });
     if (existing) {
       return res.status(400).json({ success: false, message: "Subject already exists." });
     }
 
-    const subject = await Subject.create({ name, slug, mainCategory, coverImage });
+    // Create the new subject
+    const subject = await Subject.create({ name, mainCategory, stream, coverImage });
+
+    // Populate the 'stream' and 'mainCategory' after creating the subject
+    const populatedSubject = await Subject.findById(subject._id).populate("mainCategory", "title slug").populate("stream", "name slug");
 
     res.status(201).json({
       success: true,
       message: "Subject created successfully.",
-      subject,
+      subject: populatedSubject,
     });
   } catch (error) {
     console.error("Add Subject Error:", error);
@@ -30,7 +44,8 @@ exports.addSubject = async (req, res) => {
   }
 };
 
-// 📥 Get All Subjects (with search, pagination, sort)
+
+// 📄 Get All Subjects (with search, pagination, sort)
 exports.getAllSubjects = async (req, res) => {
   try {
     const { search = "", page = 1, limit = 10, sort = "createdAt", order = "desc" } = req.query;
@@ -43,6 +58,7 @@ exports.getAllSubjects = async (req, res) => {
 
     const subjects = await Subject.find(query)
       .populate("mainCategory", "title slug")
+      .populate("stream", "name slug") // Populate stream name
       .sort({ [sort]: order === "desc" ? -1 : 1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -65,7 +81,9 @@ exports.getSubjectBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const subject = await Subject.findOne({ slug }).populate("mainCategory", "title slug");
+    const subject = await Subject.findOne({ slug })
+      .populate("mainCategory", "title slug")
+      .populate("stream", "name slug"); // Populate stream name
     if (!subject) {
       return res.status(404).json({ success: false, message: "Subject not found." });
     }
@@ -77,17 +95,34 @@ exports.getSubjectBySlug = async (req, res) => {
   }
 };
 
+
 // ✏️ Update Subject
 exports.updateSubject = async (req, res) => {
   try {
-    const { name, mainCategory, coverImage } = req.body;
+    const { name, mainCategory, stream, coverImage } = req.body;
     const { slug } = req.params;
 
-    const newSlug = slugify(name, { lower: true, strict: true });
+    // Fetch MainCategory to get class info
+    const mainCat = await MainCategory.findById(mainCategory);
+    if (!mainCat) {
+      return res.status(400).json({ success: false, message: "Invalid Main Category." });
+    }
 
+    // Validate Stream if class is 11th or 12th
+    if ((mainCat.className === "11th" || mainCat.className === "12th") && !stream) {
+      return res.status(400).json({ success: false, message: "Stream is required for class 11th and 12th." });
+    }
+
+    // Check if subject with the same slug exists before updating
+    const existingSlug = await Subject.findOne({ slug: slugify(name, { lower: true, strict: true }) });
+    if (existingSlug) {
+      return res.status(400).json({ success: false, message: "Subject already exists with this name." });
+    }
+
+    // Update the subject
     const updated = await Subject.findOneAndUpdate(
       { slug },
-      { name, slug: newSlug, mainCategory, coverImage },
+      { name, slug: slugify(name, { lower: true, strict: true }), mainCategory, stream, coverImage },
       { new: true }
     );
 
@@ -95,16 +130,21 @@ exports.updateSubject = async (req, res) => {
       return res.status(404).json({ success: false, message: "Subject not found." });
     }
 
+    // Populate the updated stream and mainCategory
+    const populatedSubject = await Subject.findById(updated._id).populate("stream", "name slug").populate("mainCategory", "title slug");
+
     res.json({
       success: true,
       message: "Subject updated successfully.",
-      subject: updated,
+      subject: populatedSubject,
     });
   } catch (error) {
     console.error("Update Subject Error:", error);
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
+
+
 
 // ❌ Delete Subject
 exports.deleteSubject = async (req, res) => {

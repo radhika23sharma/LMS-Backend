@@ -1,5 +1,7 @@
 const Content = require("../../models/Content");
 const slugify = require("slugify");
+const MainCategory = require('../../models/MainCategory');
+
 
 // ➕ Add Content
 exports.addContent = async (req, res) => {
@@ -9,6 +11,7 @@ exports.addContent = async (req, res) => {
       mainCategory,
       subject,
       subCategory,
+      stream,
       pdfUrl,
       coverImage,
       isTextToSpeechEnabled,
@@ -24,6 +27,25 @@ exports.addContent = async (req, res) => {
       });
     }
 
+    // ✅ Fetch main category to check class
+    const mainCat = await MainCategory.findById(mainCategory);
+    if (!mainCat) {
+      return res.status(400).json({ success: false, message: "Invalid main category." });
+    }
+
+    const className = mainCat.title.toLowerCase();
+
+    // ✅ Stream validation based on class
+    if (className.includes("11") || className.includes("12")) {
+      if (!stream) {
+        return res.status(400).json({ success: false, message: "Stream is required for class 11th and 12th." });
+      }
+    } else {
+      if (stream) {
+        return res.status(400).json({ success: false, message: "Stream should not be provided for non 11th/12th classes." });
+      }
+    }
+
     const slug = slugify(title, { lower: true, strict: true });
 
     const existing = await Content.findOne({ slug });
@@ -37,6 +59,7 @@ exports.addContent = async (req, res) => {
       mainCategory,
       subject,
       subCategory,
+      stream: (className.includes("11") || className.includes("12")) ? stream : undefined,
       pdfUrl,
       coverImage,
       isTextToSpeechEnabled,
@@ -71,6 +94,7 @@ exports.getAllContent = async (req, res) => {
       .populate("mainCategory", "title slug")
       .populate("subject", "name slug")
       .populate("subCategory", "name slug")
+      .populate("stream", "name slug") // ✅ Populating stream
       .sort({ [sort]: order === "desc" ? -1 : 1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -96,7 +120,8 @@ exports.getContentBySlug = async (req, res) => {
     const content = await Content.findOne({ slug })
       .populate("mainCategory", "title slug")
       .populate("subject", "name slug")
-      .populate("subCategory", "name slug");
+      .populate("subCategory", "name slug")
+      .populate("stream", "name slug"); // ✅ Added stream
 
     if (!content) {
       return res.status(404).json({ success: false, message: "Content not found." });
@@ -118,6 +143,7 @@ exports.updateContent = async (req, res) => {
       mainCategory,
       subject,
       subCategory,
+      stream, // ✅ Add stream
       pdfUrl,
       coverImage,
       isTextToSpeechEnabled,
@@ -136,6 +162,7 @@ exports.updateContent = async (req, res) => {
         mainCategory,
         subject,
         subCategory,
+        stream, // ✅ Include stream
         pdfUrl,
         coverImage,
         isTextToSpeechEnabled,

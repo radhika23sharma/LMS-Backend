@@ -35,6 +35,9 @@ const purchaseSchema = new mongoose.Schema({
     type: Number,
     default: 5, // Tracks remaining downloads
   },
+  razorpayOrderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String,
   accessExpiresAt: {
     type: Date, // If content has an expiration date, such as subscription-based access
   },

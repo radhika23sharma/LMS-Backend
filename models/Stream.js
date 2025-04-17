@@ -1,42 +1,33 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
-const subjectSchema = new mongoose.Schema(
+const streamSchema = new mongoose.Schema(
   {
-
     name: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
     },
-    stream: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Stream",
-      required: false, // ❌ Don't make it required here
+    slug: {
+      type: String,
+      unique: true,
     },
     mainCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MainCategory", // 11th / 12th class
       required: true,
     },
-    slug: {
-      type: String,
-      unique: true,
-    },
-    coverImage: {
-      type: String,
-      required: false,
-    },
   },
   { timestamps: true }
 );
 
-// 🔤 Slug generator
-subjectSchema.pre("save", function (next) {
+// 🔁 Generate slug before saving
+streamSchema.pre("save", function (next) {
   if (this.isModified("name")) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
   next();
 });
 
-module.exports = mongoose.model("Subject", subjectSchema);
+module.exports = mongoose.model("Stream", streamSchema);

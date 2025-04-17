@@ -18,6 +18,12 @@ const contentSchema = new mongoose.Schema(
       ref: "SubCategory",
       required: true,
     },
+    stream: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Stream",
+      // We'll conditionally set required based on the class
+      required: false, // Default is false, but we’ll modify it later
+    },
     title: {
       type: String,
       required: true,
@@ -55,10 +61,13 @@ const contentSchema = new mongoose.Schema(
 );
 
 // 🧠 Auto-generate slug from title
-contentSchema.pre("save", function (next) {
+contentSchema.pre("save", async function (next) {
+  
+  // Auto-generate slug if the title is modified
   if (this.isModified("title")) {
     this.slug = slugify(this.title, { lower: true, strict: true });
   }
+
   next();
 });
 

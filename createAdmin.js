@@ -5,7 +5,7 @@ require("dotenv").config();
 
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
-    const adminExists = await User.findOne({ email: "admin@example.com" });
+    const adminExists = await User.findOne({ email: "admin@gmail.com" });
 
     if (!adminExists) {
       const newAdmin = new User({

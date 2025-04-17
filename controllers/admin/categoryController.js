@@ -1,14 +1,24 @@
 const MainCategory = require("../../models/MainCategory");
 const slugify = require("slugify");
 
+function normalizeTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/class\s*/gi, "")
+    .replace(/th|st|nd|rd/gi, "")
+    .replace(/[^a-z0-9]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // ➕ Add Main Category
 exports.addMainCategory = async (req, res) => {
   try {
     const { title } = req.body;
-
     if (!title) return res.status(400).json({ success: false, message: "Title is required." });
 
-    const slug = slugify(title, { lower: true, strict: true });
+    const normalized = normalizeTitle(title);
+    const slug = slugify(normalized, { lower: true, strict: true });
 
     const existing = await MainCategory.findOne({ slug });
     if (existing) return res.status(400).json({ success: false, message: "Category already exists." });
@@ -26,13 +36,13 @@ exports.addMainCategory = async (req, res) => {
   }
 };
 
-// 📥 Get All (with Search + Pagination + Sort)
+// 📥 Get All Categories
 exports.getAllMainCategories = async (req, res) => {
   try {
     const { search = "", page = 1, limit = 10, sort = "createdAt", order = "desc" } = req.query;
 
     const query = {
-      title: { $regex: search, $options: "i" }
+      title: { $regex: search, $options: "i" },
     };
 
     const total = await MainCategory.countDocuments(query);
@@ -76,7 +86,8 @@ exports.updateMainCategory = async (req, res) => {
     const { title } = req.body;
     const { slug } = req.params;
 
-    const newSlug = slugify(title, { lower: true, strict: true });
+    const newNormalized = normalizeTitle(title);
+    const newSlug = slugify(newNormalized, { lower: true, strict: true });
 
     const updated = await MainCategory.findOneAndUpdate(
       { slug },
@@ -101,7 +112,6 @@ exports.updateMainCategory = async (req, res) => {
 exports.deleteMainCategory = async (req, res) => {
   try {
     const { slug } = req.params;
-
     const deleted = await MainCategory.findOneAndDelete({ slug });
 
     if (!deleted) return res.status(404).json({ success: false, message: "Category not found." });

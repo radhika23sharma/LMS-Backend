@@ -10,6 +10,9 @@ const subCategoryRoutes = require("./routes/admin/subCategoryRoutes");
 const contentRoutes = require("./routes/admin/contentRoutes"); 
 const purchaseRoutes = require('./routes/purchaseRoutes');
 const studentContentRoutes = require("./routes/student/studentContentRoutes");
+const packageRoutes = require("./routes/admin/packageRoutes");
+
+const streamRoutes = require("./routes/admin/streamRoutes");
 
 const app = express();
 // Middleware
@@ -30,6 +33,8 @@ app.use("/api/admin", categoryRoutes);
 app.use("/api/admin", subjectRoutes);
 app.use("/api/admin", subCategoryRoutes);
 app.use("/api/admin", contentRoutes); 
+app.use("/api/admin", packageRoutes);
+app.use("/api/admin", streamRoutes);
 app.use('/api/purchases', purchaseRoutes);
 
 // Use the student content routes

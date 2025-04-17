@@ -1,6 +1,16 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
+function normalizeTitle(title) {
+  return title
+    .toLowerCase()
+    .replace(/class\s*/gi, "")
+    .replace(/th|st|nd|rd/gi, "")
+    .replace(/[^a-z0-9]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const mainCategorySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -16,7 +26,8 @@ const mainCategorySchema = new mongoose.Schema({
 
 mainCategorySchema.pre("save", function (next) {
   if (this.isModified("title")) {
-    this.slug = slugify(this.title, { lower: true, strict: true });
+    const normalized = normalizeTitle(this.title);
+    this.slug = slugify(normalized, { lower: true, strict: true });
   }
   next();
 });
